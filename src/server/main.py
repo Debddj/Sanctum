@@ -6,21 +6,27 @@ pipeline orchestrator on startup.
 
 from __future__ import annotations
 
+import json
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
+from src.server.pipeline_orchestrator import PipelineOrchestrator
+from src.server.routes import calibration, session
+
+orchestrator = PipelineOrchestrator()
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Initialize and tear down pipeline resources."""
-    # TODO: Initialize pipeline orchestrator, webcam stream, MediaPipe
-    print("Sanctum server starting...")
+    print("[Sanctum] Server starting, initializing pipeline orchestrator...")
+    orchestrator.start()
     yield
-    # TODO: Clean up resources
-    print("Sanctum server shutting down.")
+    print("[Sanctum] Server shutting down, stopping pipeline orchestrator...")
+    orchestrator.stop()
 
 
 app = FastAPI(
@@ -38,24 +44,37 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(session.router)
+app.include_router(calibration.router)
+
 
 @app.get("/health")
 async def health() -> dict:
     """Health check endpoint."""
-    return {"status": "ok", "service": "sanctum"}
+    return {
+        "status": "ok",
+        "service": "sanctum",
+        "pipeline_running": orchestrator.is_running,
+        "active_clients": len(orchestrator.active_websockets),
+    }
 
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket) -> None:
     """Main WebSocket endpoint for frame-synced landmark and effect streaming."""
     await websocket.accept()
+    await orchestrator.register_websocket(websocket)
     try:
         while True:
-            # TODO: Stream landmarks + effect state to frontend
-            data = await websocket.receive_text()
-            await websocket.send_json({"type": "ack", "data": data})
+            raw_data = await websocket.receive_text()
+            try:
+                msg = json.loads(raw_data)
+                # Echo / Ack for connection validation & latency ping tests
+                await websocket.send_json({"type": "ack", "received": msg})
+            except json.JSONDecodeError:
+                await websocket.send_json({"type": "ack", "received": raw_data})
     except WebSocketDisconnect:
-        pass
+        await orchestrator.unregister_websocket(websocket)
 
 
 if __name__ == "__main__":

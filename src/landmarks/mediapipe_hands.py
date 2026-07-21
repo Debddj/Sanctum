@@ -9,7 +9,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Optional
 
-import mediapipe as mp
 import numpy as np
 
 
@@ -32,13 +31,18 @@ class MediaPipeHands:
         min_detection_confidence: float = 0.7,
         min_tracking_confidence: float = 0.5,
     ) -> None:
-        self._hands = mp.solutions.hands.Hands(
-            static_image_mode=False,
-            max_num_hands=max_num_hands,
-            model_complexity=model_complexity,
-            min_detection_confidence=min_detection_confidence,
-            min_tracking_confidence=min_tracking_confidence,
-        )
+        try:
+            import mediapipe as mp
+            self._mp = mp
+            self._hands = mp.solutions.hands.Hands(
+                static_image_mode=False,
+                max_num_hands=max_num_hands,
+                model_complexity=model_complexity,
+                min_detection_confidence=min_detection_confidence,
+                min_tracking_confidence=min_tracking_confidence,
+            )
+        except Exception as e:
+            raise RuntimeError(f"Failed to initialize MediaPipe Hands: {e}")
 
     def extract(self, frame_rgb: np.ndarray) -> list[HandLandmarks]:
         """Extract hand landmarks from an RGB frame.
@@ -76,7 +80,8 @@ class MediaPipeHands:
 
     def close(self) -> None:
         """Release MediaPipe resources."""
-        self._hands.close()
+        if hasattr(self, "_hands") and self._hands is not None:
+            self._hands.close()
 
     def __enter__(self) -> "MediaPipeHands":
         return self

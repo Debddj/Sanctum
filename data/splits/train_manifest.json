@@ -1,0 +1,702 @@
+[
+  {
+    "file": "pinch_pull_0042.npy",
+    "label": 2,
+    "gesture": "pinch_pull"
+  },
+  {
+    "file": "open_palm_0027.npy",
+    "label": 3,
+    "gesture": "open_palm"
+  },
+  {
+    "file": "sling_ring_0049.npy",
+    "label": 0,
+    "gesture": "sling_ring"
+  },
+  {
+    "file": "mudra_hold_0037.npy",
+    "label": 1,
+    "gesture": "mudra_hold"
+  },
+  {
+    "file": "pinch_pull_0033.npy",
+    "label": 2,
+    "gesture": "pinch_pull"
+  },
+  {
+    "file": "open_palm_0033.npy",
+    "label": 3,
+    "gesture": "open_palm"
+  },
+  {
+    "file": "pinch_pull_0039.npy",
+    "label": 2,
+    "gesture": "pinch_pull"
+  },
+  {
+    "file": "sling_ring_0004.npy",
+    "label": 0,
+    "gesture": "sling_ring"
+  },
+  {
+    "file": "sling_ring_0044.npy",
+    "label": 0,
+    "gesture": "sling_ring"
+  },
+  {
+    "file": "pinch_pull_0048.npy",
+    "label": 2,
+    "gesture": "pinch_pull"
+  },
+  {
+    "file": "pinch_pull_0013.npy",
+    "label": 2,
+    "gesture": "pinch_pull"
+  },
+  {
+    "file": "sling_ring_0024.npy",
+    "label": 0,
+    "gesture": "sling_ring"
+  },
+  {
+    "file": "sling_ring_0003.npy",
+    "label": 0,
+    "gesture": "sling_ring"
+  },
+  {
+    "file": "sling_ring_0042.npy",
+    "label": 0,
+    "gesture": "sling_ring"
+  },
+  {
+    "file": "pinch_pull_0010.npy",
+    "label": 2,
+    "gesture": "pinch_pull"
+  },
+  {
+    "file": "pinch_pull_0012.npy",
+    "label": 2,
+    "gesture": "pinch_pull"
+  },
+  {
+    "file": "pinch_pull_0006.npy",
+    "label": 2,
+    "gesture": "pinch_pull"
+  },
+  {
+    "file": "sling_ring_0001.npy",
+    "label": 0,
+    "gesture": "sling_ring"
+  },
+  {
+    "file": "open_palm_0044.npy",
+    "label": 3,
+    "gesture": "open_palm"
+  },
+  {
+    "file": "open_palm_0021.npy",
+    "label": 3,
+    "gesture": "open_palm"
+  },
+  {
+    "file": "open_palm_0014.npy",
+    "label": 3,
+    "gesture": "open_palm"
+  },
+  {
+    "file": "pinch_pull_0046.npy",
+    "label": 2,
+    "gesture": "pinch_pull"
+  },
+  {
+    "file": "open_palm_0013.npy",
+    "label": 3,
+    "gesture": "open_palm"
+  },
+  {
+    "file": "open_palm_0015.npy",
+    "label": 3,
+    "gesture": "open_palm"
+  },
+  {
+    "file": "sling_ring_0039.npy",
+    "label": 0,
+    "gesture": "sling_ring"
+  },
+  {
+    "file": "sling_ring_0045.npy",
+    "label": 0,
+    "gesture": "sling_ring"
+  },
+  {
+    "file": "open_palm_0038.npy",
+    "label": 3,
+    "gesture": "open_palm"
+  },
+  {
+    "file": "pinch_pull_0009.npy",
+    "label": 2,
+    "gesture": "pinch_pull"
+  },
+  {
+    "file": "pinch_pull_0036.npy",
+    "label": 2,
+    "gesture": "pinch_pull"
+  },
+  {
+    "file": "sling_ring_0026.npy",
+    "label": 0,
+    "gesture": "sling_ring"
+  },
+  {
+    "file": "open_palm_0012.npy",
+    "label": 3,
+    "gesture": "open_palm"
+  },
+  {
+    "file": "mudra_hold_0013.npy",
+    "label": 1,
+    "gesture": "mudra_hold"
+  },
+  {
+    "file": "pinch_pull_0026.npy",
+    "label": 2,
+    "gesture": "pinch_pull"
+  },
+  {
+    "file": "pinch_pull_0032.npy",
+    "label": 2,
+    "gesture": "pinch_pull"
+  },
+  {
+    "file": "mudra_hold_0041.npy",
+    "label": 1,
+    "gesture": "mudra_hold"
+  },
+  {
+    "file": "pinch_pull_0021.npy",
+    "label": 2,
+    "gesture": "pinch_pull"
+  },
+  {
+    "file": "mudra_hold_0005.npy",
+    "label": 1,
+    "gesture": "mudra_hold"
+  },
+  {
+    "file": "open_palm_0017.npy",
+    "label": 3,
+    "gesture": "open_palm"
+  },
+  {
+    "file": "sling_ring_0023.npy",
+    "label": 0,
+    "gesture": "sling_ring"
+  },
+  {
+    "file": "pinch_pull_0031.npy",
+    "label": 2,
+    "gesture": "pinch_pull"
+  },
+  {
+    "file": "mudra_hold_0029.npy",
+    "label": 1,
+    "gesture": "mudra_hold"
+  },
+  {
+    "file": "mudra_hold_0046.npy",
+    "label": 1,
+    "gesture": "mudra_hold"
+  },
+  {
+    "file": "mudra_hold_0048.npy",
+    "label": 1,
+    "gesture": "mudra_hold"
+  },
+  {
+    "file": "sling_ring_0041.npy",
+    "label": 0,
+    "gesture": "sling_ring"
+  },
+  {
+    "file": "open_palm_0046.npy",
+    "label": 3,
+    "gesture": "open_palm"
+  },
+  {
+    "file": "pinch_pull_0038.npy",
+    "label": 2,
+    "gesture": "pinch_pull"
+  },
+  {
+    "file": "mudra_hold_0018.npy",
+    "label": 1,
+    "gesture": "mudra_hold"
+  },
+  {
+    "file": "mudra_hold_0045.npy",
+    "label": 1,
+    "gesture": "mudra_hold"
+  },
+  {
+    "file": "open_palm_0003.npy",
+    "label": 3,
+    "gesture": "open_palm"
+  },
+  {
+    "file": "pinch_pull_0000.npy",
+    "label": 2,
+    "gesture": "pinch_pull"
+  },
+  {
+    "file": "mudra_hold_0027.npy",
+    "label": 1,
+    "gesture": "mudra_hold"
+  },
+  {
+    "file": "open_palm_0029.npy",
+    "label": 3,
+    "gesture": "open_palm"
+  },
+  {
+    "file": "pinch_pull_0008.npy",
+    "label": 2,
+    "gesture": "pinch_pull"
+  },
+  {
+    "file": "mudra_hold_0024.npy",
+    "label": 1,
+    "gesture": "mudra_hold"
+  },
+  {
+    "file": "mudra_hold_0007.npy",
+    "label": 1,
+    "gesture": "mudra_hold"
+  },
+  {
+    "file": "mudra_hold_0014.npy",
+    "label": 1,
+    "gesture": "mudra_hold"
+  },
+  {
+    "file": "pinch_pull_0049.npy",
+    "label": 2,
+    "gesture": "pinch_pull"
+  },
+  {
+    "file": "sling_ring_0007.npy",
+    "label": 0,
+    "gesture": "sling_ring"
+  },
+  {
+    "file": "open_palm_0035.npy",
+    "label": 3,
+    "gesture": "open_palm"
+  },
+  {
+    "file": "sling_ring_0040.npy",
+    "label": 0,
+    "gesture": "sling_ring"
+  },
+  {
+    "file": "sling_ring_0032.npy",
+    "label": 0,
+    "gesture": "sling_ring"
+  },
+  {
+    "file": "open_palm_0011.npy",
+    "label": 3,
+    "gesture": "open_palm"
+  },
+  {
+    "file": "open_palm_0022.npy",
+    "label": 3,
+    "gesture": "open_palm"
+  },
+  {
+    "file": "mudra_hold_0033.npy",
+    "label": 1,
+    "gesture": "mudra_hold"
+  },
+  {
+    "file": "pinch_pull_0037.npy",
+    "label": 2,
+    "gesture": "pinch_pull"
+  },
+  {
+    "file": "mudra_hold_0009.npy",
+    "label": 1,
+    "gesture": "mudra_hold"
+  },
+  {
+    "file": "pinch_pull_0041.npy",
+    "label": 2,
+    "gesture": "pinch_pull"
+  },
+  {
+    "file": "pinch_pull_0029.npy",
+    "label": 2,
+    "gesture": "pinch_pull"
+  },
+  {
+    "file": "mudra_hold_0010.npy",
+    "label": 1,
+    "gesture": "mudra_hold"
+  },
+  {
+    "file": "mudra_hold_0031.npy",
+    "label": 1,
+    "gesture": "mudra_hold"
+  },
+  {
+    "file": "open_palm_0004.npy",
+    "label": 3,
+    "gesture": "open_palm"
+  },
+  {
+    "file": "mudra_hold_0047.npy",
+    "label": 1,
+    "gesture": "mudra_hold"
+  },
+  {
+    "file": "sling_ring_0048.npy",
+    "label": 0,
+    "gesture": "sling_ring"
+  },
+  {
+    "file": "pinch_pull_0011.npy",
+    "label": 2,
+    "gesture": "pinch_pull"
+  },
+  {
+    "file": "sling_ring_0043.npy",
+    "label": 0,
+    "gesture": "sling_ring"
+  },
+  {
+    "file": "open_palm_0020.npy",
+    "label": 3,
+    "gesture": "open_palm"
+  },
+  {
+    "file": "sling_ring_0034.npy",
+    "label": 0,
+    "gesture": "sling_ring"
+  },
+  {
+    "file": "mudra_hold_0020.npy",
+    "label": 1,
+    "gesture": "mudra_hold"
+  },
+  {
+    "file": "pinch_pull_0007.npy",
+    "label": 2,
+    "gesture": "pinch_pull"
+  },
+  {
+    "file": "mudra_hold_0021.npy",
+    "label": 1,
+    "gesture": "mudra_hold"
+  },
+  {
+    "file": "pinch_pull_0003.npy",
+    "label": 2,
+    "gesture": "pinch_pull"
+  },
+  {
+    "file": "mudra_hold_0028.npy",
+    "label": 1,
+    "gesture": "mudra_hold"
+  },
+  {
+    "file": "open_palm_0034.npy",
+    "label": 3,
+    "gesture": "open_palm"
+  },
+  {
+    "file": "mudra_hold_0035.npy",
+    "label": 1,
+    "gesture": "mudra_hold"
+  },
+  {
+    "file": "sling_ring_0031.npy",
+    "label": 0,
+    "gesture": "sling_ring"
+  },
+  {
+    "file": "sling_ring_0012.npy",
+    "label": 0,
+    "gesture": "sling_ring"
+  },
+  {
+    "file": "mudra_hold_0011.npy",
+    "label": 1,
+    "gesture": "mudra_hold"
+  },
+  {
+    "file": "sling_ring_0002.npy",
+    "label": 0,
+    "gesture": "sling_ring"
+  },
+  {
+    "file": "sling_ring_0016.npy",
+    "label": 0,
+    "gesture": "sling_ring"
+  },
+  {
+    "file": "open_palm_0049.npy",
+    "label": 3,
+    "gesture": "open_palm"
+  },
+  {
+    "file": "open_palm_0037.npy",
+    "label": 3,
+    "gesture": "open_palm"
+  },
+  {
+    "file": "sling_ring_0017.npy",
+    "label": 0,
+    "gesture": "sling_ring"
+  },
+  {
+    "file": "open_palm_0042.npy",
+    "label": 3,
+    "gesture": "open_palm"
+  },
+  {
+    "file": "mudra_hold_0030.npy",
+    "label": 1,
+    "gesture": "mudra_hold"
+  },
+  {
+    "file": "sling_ring_0019.npy",
+    "label": 0,
+    "gesture": "sling_ring"
+  },
+  {
+    "file": "open_palm_0005.npy",
+    "label": 3,
+    "gesture": "open_palm"
+  },
+  {
+    "file": "open_palm_0024.npy",
+    "label": 3,
+    "gesture": "open_palm"
+  },
+  {
+    "file": "open_palm_0048.npy",
+    "label": 3,
+    "gesture": "open_palm"
+  },
+  {
+    "file": "sling_ring_0025.npy",
+    "label": 0,
+    "gesture": "sling_ring"
+  },
+  {
+    "file": "open_palm_0030.npy",
+    "label": 3,
+    "gesture": "open_palm"
+  },
+  {
+    "file": "sling_ring_0011.npy",
+    "label": 0,
+    "gesture": "sling_ring"
+  },
+  {
+    "file": "sling_ring_0021.npy",
+    "label": 0,
+    "gesture": "sling_ring"
+  },
+  {
+    "file": "mudra_hold_0043.npy",
+    "label": 1,
+    "gesture": "mudra_hold"
+  },
+  {
+    "file": "sling_ring_0000.npy",
+    "label": 0,
+    "gesture": "sling_ring"
+  },
+  {
+    "file": "open_palm_0041.npy",
+    "label": 3,
+    "gesture": "open_palm"
+  },
+  {
+    "file": "pinch_pull_0024.npy",
+    "label": 2,
+    "gesture": "pinch_pull"
+  },
+  {
+    "file": "open_palm_0010.npy",
+    "label": 3,
+    "gesture": "open_palm"
+  },
+  {
+    "file": "sling_ring_0015.npy",
+    "label": 0,
+    "gesture": "sling_ring"
+  },
+  {
+    "file": "pinch_pull_0020.npy",
+    "label": 2,
+    "gesture": "pinch_pull"
+  },
+  {
+    "file": "mudra_hold_0006.npy",
+    "label": 1,
+    "gesture": "mudra_hold"
+  },
+  {
+    "file": "sling_ring_0020.npy",
+    "label": 0,
+    "gesture": "sling_ring"
+  },
+  {
+    "file": "sling_ring_0027.npy",
+    "label": 0,
+    "gesture": "sling_ring"
+  },
+  {
+    "file": "sling_ring_0018.npy",
+    "label": 0,
+    "gesture": "sling_ring"
+  },
+  {
+    "file": "open_palm_0031.npy",
+    "label": 3,
+    "gesture": "open_palm"
+  },
+  {
+    "file": "open_palm_0008.npy",
+    "label": 3,
+    "gesture": "open_palm"
+  },
+  {
+    "file": "pinch_pull_0015.npy",
+    "label": 2,
+    "gesture": "pinch_pull"
+  },
+  {
+    "file": "pinch_pull_0030.npy",
+    "label": 2,
+    "gesture": "pinch_pull"
+  },
+  {
+    "file": "pinch_pull_0001.npy",
+    "label": 2,
+    "gesture": "pinch_pull"
+  },
+  {
+    "file": "sling_ring_0037.npy",
+    "label": 0,
+    "gesture": "sling_ring"
+  },
+  {
+    "file": "mudra_hold_0036.npy",
+    "label": 1,
+    "gesture": "mudra_hold"
+  },
+  {
+    "file": "open_palm_0047.npy",
+    "label": 3,
+    "gesture": "open_palm"
+  },
+  {
+    "file": "open_palm_0036.npy",
+    "label": 3,
+    "gesture": "open_palm"
+  },
+  {
+    "file": "mudra_hold_0019.npy",
+    "label": 1,
+    "gesture": "mudra_hold"
+  },
+  {
+    "file": "pinch_pull_0004.npy",
+    "label": 2,
+    "gesture": "pinch_pull"
+  },
+  {
+    "file": "open_palm_0026.npy",
+    "label": 3,
+    "gesture": "open_palm"
+  },
+  {
+    "file": "pinch_pull_0018.npy",
+    "label": 2,
+    "gesture": "pinch_pull"
+  },
+  {
+    "file": "open_palm_0018.npy",
+    "label": 3,
+    "gesture": "open_palm"
+  },
+  {
+    "file": "pinch_pull_0023.npy",
+    "label": 2,
+    "gesture": "pinch_pull"
+  },
+  {
+    "file": "mudra_hold_0026.npy",
+    "label": 1,
+    "gesture": "mudra_hold"
+  },
+  {
+    "file": "pinch_pull_0016.npy",
+    "label": 2,
+    "gesture": "pinch_pull"
+  },
+  {
+    "file": "sling_ring_0008.npy",
+    "label": 0,
+    "gesture": "sling_ring"
+  },
+  {
+    "file": "mudra_hold_0039.npy",
+    "label": 1,
+    "gesture": "mudra_hold"
+  },
+  {
+    "file": "pinch_pull_0017.npy",
+    "label": 2,
+    "gesture": "pinch_pull"
+  },
+  {
+    "file": "open_palm_0023.npy",
+    "label": 3,
+    "gesture": "open_palm"
+  },
+  {
+    "file": "sling_ring_0006.npy",
+    "label": 0,
+    "gesture": "sling_ring"
+  },
+  {
+    "file": "pinch_pull_0045.npy",
+    "label": 2,
+    "gesture": "pinch_pull"
+  },
+  {
+    "file": "mudra_hold_0044.npy",
+    "label": 1,
+    "gesture": "mudra_hold"
+  },
+  {
+    "file": "mudra_hold_0038.npy",
+    "label": 1,
+    "gesture": "mudra_hold"
+  },
+  {
+    "file": "open_palm_0002.npy",
+    "label": 3,
+    "gesture": "open_palm"
+  },
+  {
+    "file": "open_palm_0028.npy",
+    "label": 3,
+    "gesture": "open_palm"
+  }
+]
