@@ -1,0 +1,38 @@
+version: "3.9"
+
+services:
+  sanctum-server:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.dev
+    container_name: sanctum-server
+    ports:
+      - "8000:8000"
+    volumes:
+      - ..:/app
+      - /dev/video0:/dev/video0  # Webcam passthrough (Linux)
+    environment:
+      - CUDA_VISIBLE_DEVICES=0
+      - SANCTUM_LOG_LEVEL=debug
+    env_file:
+      - ../.env
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    restart: unless-stopped
+
+  sanctum-frontend:
+    image: node:18-slim
+    container_name: sanctum-frontend
+    working_dir: /app/frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ../frontend:/app/frontend
+    command: ["sh", "-c", "npm install && npm run dev -- --host 0.0.0.0"]
+    depends_on:
+      - sanctum-server

@@ -1,0 +1,98 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# Environment variables
+.env
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# pytest
+.pytest_cache/
+htmlcov/
+.coverage
+.coverage.*
+
+# mypy
+.mypy_cache/
+
+# ruff
+.ruff_cache/
+
+# TensorRT engines (large, machine-specific binaries)
+models/trt_engines/*.engine
+models/trt_engines/*.plan
+
+# CUDA build artifacts
+src/optimization/cuda_kernels/build/
+src/optimization/cuda_kernels/*.egg-info/
+*.o
+*.cubin
+*.fatbin
+
+# Raw data (large, user-recorded)
+data/raw/
+
+# Model checkpoints (large binaries, tracked via DVC or releases)
+models/checkpoints/*.pt
+models/checkpoints/*.pth
+models/checkpoints/*.onnx
+
+# Benchmark outputs (regenerated per run)
+# Keep the templates but ignore generated CSVs
+# benchmarks/*.csv  # Uncomment if you want to gitignore these
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.cache/
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Docker
+docker/.env
+
+# Profiling artifacts
+*.prof
+*.trace

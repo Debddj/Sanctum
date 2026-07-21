@@ -1,0 +1,45 @@
+# Pipeline configuration — stage toggles, resolution, FPS targets
+
+pipeline:
+  target_fps: 30
+  input_resolution: [1280, 720]
+  processing_resolution: [640, 480]  # downscale for inference, upscale for display
+
+stages:
+  capture:
+    enabled: true
+    threaded: true
+    buffer_size: 5
+
+  landmarks:
+    enabled: true
+    model_complexity: 1        # 0=lite, 1=full
+    max_num_hands: 2
+
+  normalization:
+    enabled: true
+    method: wrist_relative     # wrist_relative | palm_center
+    scale_invariant: true
+
+  classifier:
+    enabled: true
+    backend: pytorch           # pytorch | onnx | tensorrt
+    window_size: 30
+    stride: 1
+
+  optical_flow:
+    enabled: false             # enable in Phase 4
+    method: farneback          # farneback | raft
+
+  segmentation:
+    enabled: false             # enable in Phase 5
+    method: mediapipe_selfie   # mediapipe_selfie | sam
+
+  time_reversal:
+    enabled: false             # enable in Phase 4
+    ring_buffer_seconds: 5
+
+profiling:
+  enabled: true
+  export_spans: true
+  output_dir: benchmarks/

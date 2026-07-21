@@ -1,0 +1,30 @@
+# Auto-detect text files and normalize line endings
+* text=auto
+
+# Force LF for shell scripts
+*.sh text eol=lf
+
+# Force LF for Python
+*.py text eol=lf
+
+# Binary files
+*.pt binary
+*.pth binary
+*.onnx binary
+*.engine binary
+*.plan binary
+*.npy binary
+*.npz binary
+*.png binary
+*.jpg binary
+*.mp4 binary
+*.avi binary
+
+# GLSL shaders
+*.glsl text eol=lf
+*.vert text eol=lf
+*.frag text eol=lf
+
+# CUDA
+*.cu text eol=lf
+*.cuh text eol=lf

@@ -1,0 +1,29 @@
+# syntax=docker/dockerfile:1
+# Sanctum development container — includes dev tools, Jupyter, profiling
+FROM nvidia/cuda:12.3.2-cudnn9-devel-ubuntu22.04
+
+ARG PYTHON_VERSION=3.11
+ARG DEBIAN_FRONTEND=noninteractive
+
+# System dependencies (includes devel libs for building CUDA extensions)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        python${PYTHON_VERSION} python${PYTHON_VERSION}-venv python${PYTHON_VERSION}-dev \
+        python3-pip git curl \
+        libgl1-mesa-glx libglib2.0-0 \
+        libsm6 libxext6 libxrender-dev \
+        build-essential cmake \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Python dependencies (including dev extras)
+COPY requirements.txt .
+RUN python${PYTHON_VERSION} -m pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+RUN python${PYTHON_VERSION} -m pip install --no-cache-dir -e ".[dev]"
+
+EXPOSE 8000 8888
+
+# Default: run the server (override in docker-compose for Jupyter, etc.)
+CMD ["uvicorn", "src.server.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]

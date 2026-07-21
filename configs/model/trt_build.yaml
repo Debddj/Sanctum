@@ -1,0 +1,28 @@
+# TensorRT engine build configuration
+
+build:
+  onnx_path: models/checkpoints/gesture_classifier.onnx
+  engine_output: models/trt_engines/gesture_classifier.engine
+
+  precision: fp16             # fp16 | int8 | fp32
+  workspace_mb: 1024
+  max_batch_size: 1
+
+  # INT8 calibration (only used when precision=int8)
+  int8_calibration:
+    calibration_data: data/splits/val_manifest.json
+    cache_file: models/trt_engines/calibration.cache
+    num_calibration_batches: 100
+
+  # Dynamic shapes (for variable batch sizes)
+  dynamic_shapes:
+    enabled: false
+    min_shape: [1, 30, 63]    # [batch, seq_len, features]
+    opt_shape: [1, 30, 63]
+    max_shape: [8, 30, 63]
+
+  # Optimization profiles
+  builder_flags:
+    strict_types: false
+    sparse_weights: false
+    timing_cache: models/trt_engines/timing.cache

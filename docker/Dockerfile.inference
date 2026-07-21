@@ -1,0 +1,35 @@
+# syntax=docker/dockerfile:1
+# Sanctum inference container — CUDA + TensorRT runtime
+FROM nvidia/cuda:12.3.2-cudnn9-runtime-ubuntu22.04
+
+ARG PYTHON_VERSION=3.11
+ARG DEBIAN_FRONTEND=noninteractive
+
+# System dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        python${PYTHON_VERSION} python${PYTHON_VERSION}-venv python3-pip \
+        libgl1-mesa-glx libglib2.0-0 \
+        libsm6 libxext6 libxrender-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# TensorRT — install from NVIDIA repos (version must match CUDA)
+# Uncomment and pin version when ready:
+# RUN apt-get update && apt-get install -y --no-install-recommends \
+#         libnvinfer8 libnvinfer-plugin8 python3-libnvinfer \
+#     && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Python dependencies
+COPY requirements.txt .
+RUN python${PYTHON_VERSION} -m pip install --no-cache-dir -r requirements.txt
+
+# Copy application
+COPY . .
+
+# Install package
+RUN python${PYTHON_VERSION} -m pip install --no-cache-dir -e .
+
+EXPOSE 8000
+
+CMD ["uvicorn", "src.server.main:app", "--host", "0.0.0.0", "--port", "8000"]

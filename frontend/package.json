@@ -1,0 +1,18 @@
+{
+  "name": "sanctum-frontend",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Sanctum AR VFX frontend — Three.js renderer with WebSocket client",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "three": "^0.162.0"
+  },
+  "devDependencies": {
+    "vite": "^5.1.0"
+  }
+}

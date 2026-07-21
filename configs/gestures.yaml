@@ -1,0 +1,40 @@
+# Gesture class definitions and recognition thresholds
+# Each gesture maps to a VFX dispatch action
+
+gestures:
+  sling_ring:
+    description: "Circular hand motion tracing a portal opening"
+    type: temporal       # requires sequence of frames to detect
+    min_confidence: 0.85
+    cooldown_ms: 1000    # prevent rapid re-triggers
+    dispatch_action: spawn_portal
+    window_frames: 30    # classifier sliding window size
+
+  mudra_hold:
+    description: "Static hand pose — fingers in a specific configuration"
+    type: static         # single-frame classification
+    min_confidence: 0.90
+    cooldown_ms: 500
+    dispatch_action: activate_shield
+
+  pinch_pull:
+    description: "Pinch gesture followed by pulling motion"
+    type: temporal
+    min_confidence: 0.80
+    cooldown_ms: 800
+    dispatch_action: trigger_time_reversal
+    window_frames: 20
+
+  open_palm:
+    description: "Fully open hand, fingers spread"
+    type: static
+    min_confidence: 0.88
+    cooldown_ms: 300
+    dispatch_action: dismiss_effect
+
+# Global settings
+recognition:
+  max_hands: 2
+  handedness_filter: null  # null = both, "Left", "Right"
+  min_detection_confidence: 0.7
+  min_tracking_confidence: 0.5

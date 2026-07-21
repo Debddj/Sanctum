@@ -1,0 +1,40 @@
+# Gesture classifier model configuration
+
+model:
+  architecture: cnn_1d        # cnn_1d | lstm | cnn_lstm_hybrid
+  input_features: 63          # 21 landmarks × 3 coords (x, y, z)
+  num_classes: 4              # sling_ring, mudra_hold, pinch_pull, open_palm
+  window_size: 30             # frames per sample
+
+cnn_1d:
+  channels: [64, 128, 256]
+  kernel_sizes: [3, 3, 3]
+  dropout: 0.3
+  pool_size: 2
+
+lstm:
+  hidden_size: 128
+  num_layers: 2
+  dropout: 0.3
+  bidirectional: true
+
+training:
+  batch_size: 64
+  epochs: 100
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  scheduler: cosine_annealing
+  early_stopping_patience: 15
+
+  augmentation:
+    enabled: true
+    noise_std: 0.02
+    time_warp: true
+    scale_jitter: [0.9, 1.1]
+
+data:
+  train_split: 0.7
+  val_split: 0.15
+  test_split: 0.15
+  sequence_dir: data/landmark_sequences/
+  splits_dir: data/splits/
