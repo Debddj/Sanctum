@@ -12,17 +12,9 @@ services:
       - ..:/app
       - /dev/video0:/dev/video0  # Webcam passthrough (Linux)
     environment:
-      - CUDA_VISIBLE_DEVICES=0
       - SANCTUM_LOG_LEVEL=debug
     env_file:
       - ../.env
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
     restart: unless-stopped
 
   sanctum-frontend:
