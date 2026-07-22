@@ -1,15 +1,27 @@
-"""Build script for the CUDA particle simulation extension.
+"""Build script for portal_particles_cuda pybind11 CUDA extension.
 
-Compiles portal_particles.cu and bindings.cpp into a Python extension
-module using setuptools and CUDA toolkit.
+Compiles portal_particles.cu and bindings.cpp into a native C++ extension module.
 """
 
-from setuptools import setup, Extension
+from setuptools import setup
+from torch.utils.cpp_extension import BuildExtension, CUDAExtension
 
-# TODO: Implement in Phase 7
-# - Use torch.utils.cpp_extension.CUDAExtension or manual nvcc setup
-# - Compile portal_particles.cu + bindings.cpp
-# - Link against CUDA runtime and pybind11
-
-if __name__ == "__main__":
-    raise NotImplementedError("CUDA extension build not yet implemented — see Phase 7")
+setup(
+    name="portal_particles_cuda",
+    ext_modules=[
+        CUDAExtension(
+            name="portal_particles_cuda",
+            sources=[
+                "bindings.cpp",
+                "portal_particles.cu",
+            ],
+            extra_compile_args={
+                "cxx": ["-O3"],
+                "nvcc": ["-O3", "--use_fast_math"],
+            },
+        ),
+    ],
+    cmdclass={
+        "build_ext": BuildExtension
+    },
+)
