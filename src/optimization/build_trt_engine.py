@@ -69,8 +69,15 @@ def build_engine(
     elif hasattr(config, "max_workspace_size"):
         config.max_workspace_size = workspace_mb * (1 << 20)
 
-    if precision.lower() == "fp16" and getattr(builder, "platform_has_tf32", True):
-        config.set_flag(trt.BuilderFlag.FP16)
+    # Precision flags compatibility across TensorRT 8.x, 10.x, 11.x
+    if precision.lower() == "fp16":
+        fp16_flag = getattr(trt.BuilderFlag, "FP16", None) or getattr(trt.BuilderFlag, "PRECISION_FP16", None)
+        if fp16_flag is not None:
+            config.set_flag(fp16_flag)
+    elif precision.lower() == "int8":
+        int8_flag = getattr(trt.BuilderFlag, "INT8", None) or getattr(trt.BuilderFlag, "PRECISION_INT8", None)
+        if int8_flag is not None:
+            config.set_flag(int8_flag)
 
     print(f"[TRT Build] Compiling TensorRT engine (precision={precision}, workspace={workspace_mb}MB)...")
     serialized_engine = builder.build_serialized_network(network, config)
@@ -78,8 +85,14 @@ def build_engine(
     if serialized_engine is None:
         raise RuntimeError("TensorRT engine compilation failed.")
 
+    # Convert to bytes if HostMemory object returned
+    if hasattr(serialized_engine, "tobytes"):
+        engine_bytes = serialized_engine.tobytes()
+    else:
+        engine_bytes = bytes(serialized_engine)
+
     with open(out_file, "wb") as f:
-        f.write(serialized_engine)
+        f.write(engine_bytes)
 
     print(f"[TRT Build] Successfully built and saved TensorRT engine to {out_file}")
     return out_file
