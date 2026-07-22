@@ -1,7 +1,7 @@
 """Build a TensorRT engine from an ONNX gesture classifier model.
 
 Parses ONNX model graph, configures TensorRT builder flags (FP16/INT8),
-and serializes the compiled engine binary to disk.
+sets dynamic shape optimization profiles, and serializes the compiled engine binary.
 """
 
 from __future__ import annotations
@@ -62,6 +62,18 @@ def build_engine(
             raise RuntimeError("Failed to parse ONNX model for TensorRT engine build.")
 
     config = builder.create_builder_config()
+
+    # Optimization Profile for dynamic batch shape: (batch, seq_len=30, features=63)
+    profile = builder.create_optimization_profile()
+    for i in range(network.num_inputs):
+        inp = network.get_input(i)
+        # Handle dynamic dimensions (-1 or variable batch size)
+        min_shape = (1, 30, 63)
+        opt_shape = (1, 30, 63)
+        max_shape = (8, 30, 63)
+        profile.set_shape(inp.name, min_shape, opt_shape, max_shape)
+
+    config.add_optimization_profile(profile)
 
     # Workspace limit compatibility across TensorRT 8.x, 10.x, 11.x
     if hasattr(config, "set_memory_pool_limit") and hasattr(trt, "MemoryPoolType"):
