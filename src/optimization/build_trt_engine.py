@@ -45,7 +45,14 @@ def build_engine(
 
     logger = trt.Logger(trt.Logger.WARNING)
     builder = trt.Builder(logger)
-    network = builder.create_network(1 << int(trt.NetworkDefinitionCreationFlag.EXPLICIT_BATCH))
+
+    # TensorRT 10+ handles explicit batch implicitly; 8.x uses EXPLICIT_BATCH flag
+    if hasattr(trt, "NetworkDefinitionCreationFlag") and hasattr(trt.NetworkDefinitionCreationFlag, "EXPLICIT_BATCH"):
+        flags = 1 << int(trt.NetworkDefinitionCreationFlag.EXPLICIT_BATCH)
+        network = builder.create_network(flags)
+    else:
+        network = builder.create_network()
+
     parser = trt.OnnxParser(network, logger)
 
     with open(onnx_file, "rb") as f:
@@ -55,9 +62,14 @@ def build_engine(
             raise RuntimeError("Failed to parse ONNX model for TensorRT engine build.")
 
     config = builder.create_builder_config()
-    config.set_memory_pool_limit(trt.MemoryPoolType.WORKSPACE, workspace_mb * (1 << 20))
 
-    if precision.lower() == "fp16" and builder.platform_has_tf32:
+    # Workspace limit compatibility across TensorRT 8.x, 10.x, 11.x
+    if hasattr(config, "set_memory_pool_limit") and hasattr(trt, "MemoryPoolType"):
+        config.set_memory_pool_limit(trt.MemoryPoolType.WORKSPACE, workspace_mb * (1 << 20))
+    elif hasattr(config, "max_workspace_size"):
+        config.max_workspace_size = workspace_mb * (1 << 20)
+
+    if precision.lower() == "fp16" and getattr(builder, "platform_has_tf32", True):
         config.set_flag(trt.BuilderFlag.FP16)
 
     print(f"[TRT Build] Compiling TensorRT engine (precision={precision}, workspace={workspace_mb}MB)...")
