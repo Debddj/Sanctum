@@ -15,11 +15,12 @@ import yaml
 from fastapi import WebSocket
 
 from src.capture.webcam_stream import WebcamStream
+from src.gesture.inference_backend import BaseInferenceBackend, get_inference_backend
 from src.landmarks.mediapipe_hands import MediaPipeHands
 from src.landmarks.normalization import normalize_landmarks
 from src.landmarks.sequence_windowing import SequenceWindow
 from src.profiling.latency_tracer import LatencyTracer
-from src.server.ws_protocol import LandmarkMessage, GestureMessage, EffectStateMessage, MessageType
+from src.server.ws_protocol import LandmarkMessage, GestureMessage, EffectStateMessage
 
 
 class PipelineOrchestrator:
@@ -45,6 +46,7 @@ class PipelineOrchestrator:
         self.webcam_stream: Optional[WebcamStream] = None
         self.hands_extractor: Optional[MediaPipeHands] = None
         self.sequence_window: Optional[SequenceWindow] = None
+        self.classifier_backend: Optional[BaseInferenceBackend] = None
 
         self._load_configs()
 
@@ -94,7 +96,7 @@ class PipelineOrchestrator:
         """Initialize enabled stages based on configuration."""
         stages = self.pipeline_config.get("stages", {})
 
-        # Capture stage
+        # 1. Capture stage
         if stages.get("capture", {}).get("enabled", True):
             try:
                 self.webcam_stream = WebcamStream(camera_index=0).start()
@@ -102,7 +104,7 @@ class PipelineOrchestrator:
                 print(f"[Orchestrator] Webcam initialization skipped/failed: {e}")
                 self.webcam_stream = None
 
-        # Landmarks stage
+        # 2. Landmarks stage
         if stages.get("landmarks", {}).get("enabled", True):
             try:
                 self.hands_extractor = MediaPipeHands()
@@ -110,10 +112,12 @@ class PipelineOrchestrator:
                 print(f"[Orchestrator] MediaPipe initialization skipped/failed: {e}")
                 self.hands_extractor = None
 
-        # Sequence window
+        # 3. Classifier & Sequence Window stage
         if stages.get("classifier", {}).get("enabled", True):
             window_size = stages.get("classifier", {}).get("window_size", 30)
+            backend_type = stages.get("classifier", {}).get("backend", "pytorch")
             self.sequence_window = SequenceWindow(window_size=window_size)
+            self.classifier_backend = get_inference_backend(backend_type=backend_type)
 
     async def _processing_loop(self) -> None:
         """Main processing loop executing per-frame pipeline stages."""
@@ -134,9 +138,9 @@ class PipelineOrchestrator:
 
             # 2. Landmark & Normalization stages
             detected_hands: list[dict[str, Any]] = []
+            raw_hands = []
             if frame is not None and self.hands_extractor is not None:
                 with self.tracer.trace("landmarks"):
-                    # Convert BGR (OpenCV default) to RGB for MediaPipe
                     frame_rgb = frame[:, :, ::-1] if len(frame.shape) == 3 else frame
                     raw_hands = self.hands_extractor.extract(frame_rgb)
 
@@ -160,7 +164,53 @@ class PipelineOrchestrator:
             )
             await self.broadcast_json(msg.model_dump())
 
-            # 3. Rate limiting for target FPS
+            # 3. Live Gesture Classification & Effect Dispatch
+            if self.sequence_window is not None and self.sequence_window.is_ready:
+                with self.tracer.trace("classifier"):
+                    window = self.sequence_window.get_sequence()
+                    if window is not None and self.classifier_backend is not None:
+                        pred_class, confidence = self.classifier_backend.predict(window)
+
+                        gesture_cfg = self.gestures_config.get("gestures", {}).get(pred_class, {})
+                        min_conf = gesture_cfg.get("min_confidence", 0.8)
+
+                        if confidence >= min_conf:
+                            dispatch_action = gesture_cfg.get("dispatch_action", "")
+
+                            # Compute hand centroid for VFX positioning
+                            centroid = [0.5, 0.5]
+                            if raw_hands:
+                                wrist = raw_hands[0].landmarks[0]
+                                middle_mcp = raw_hands[0].landmarks[9]
+                                centroid = [
+                                    float((wrist[0] + middle_mcp[0]) / 2.0),
+                                    float((wrist[1] + middle_mcp[1]) / 2.0),
+                                ]
+
+                            # Broadcast gesture detection message
+                            with self.tracer.trace("dispatch"):
+                                g_msg = GestureMessage(
+                                    frame_id=frame_id,
+                                    gesture_class=pred_class,
+                                    confidence=confidence,
+                                    action=dispatch_action,
+                                )
+                                await self.broadcast_json(g_msg.model_dump())
+
+                                # Broadcast effect state updates for active portal
+                                eff_msg = EffectStateMessage(
+                                    frame_id=frame_id,
+                                    portal={
+                                        "active": (dispatch_action == "spawn_portal"),
+                                        "center": centroid,
+                                        "radius": 0.35,
+                                        "intensity": float(confidence),
+                                    },
+                                    active_effects=[dispatch_action] if dispatch_action else [],
+                                )
+                                await self.broadcast_json(eff_msg.model_dump())
+
+            # Rate limiting for target FPS
             elapsed = asyncio.get_event_loop().time() - start_time
             sleep_time = max(0.0, frame_delay - elapsed)
             await asyncio.sleep(sleep_time)

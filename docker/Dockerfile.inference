@@ -9,14 +9,13 @@ ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends \
         python${PYTHON_VERSION} python${PYTHON_VERSION}-venv python3-pip \
         libgl1-mesa-glx libglib2.0-0 \
-        libsm6 libxext6 libxrender-dev \
+        libsm6 libxext6 libxrender-dev build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# TensorRT — install from NVIDIA repos (version must match CUDA)
-# Uncomment and pin version when ready:
-# RUN apt-get update && apt-get install -y --no-install-recommends \
-#         libnvinfer8 libnvinfer-plugin8 python3-libnvinfer \
-#     && rm -rf /var/lib/apt/lists/*
+# TensorRT — install from NVIDIA repos
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        libnvinfer8 libnvinfer-plugin8 python3-libnvinfer \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 

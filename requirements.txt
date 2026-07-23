@@ -13,6 +13,11 @@ pyyaml>=6.0.1
 python-dotenv>=1.0.0
 pydantic>=2.5.0
 
+# TensorRT & GPU Acceleration
+tensorrt==10.0.1
+cuda-python>=12.3
+pybind11>=2.11.0
+
 # Dev extras
 pytest>=8.0.0
 pytest-asyncio>=0.23.0

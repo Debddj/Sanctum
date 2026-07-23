@@ -2,6 +2,10 @@ version: "3.9"
 
 services:
   sanctum-server:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.inference
+    container_name: sanctum-server-gpu
     environment:
       - CUDA_VISIBLE_DEVICES=0
     deploy:
