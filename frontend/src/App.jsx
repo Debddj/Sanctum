@@ -1,8 +1,8 @@
 /**
  * Sanctum frontend application entry point.
  *
- * Initializes the Three.js scene, connects the WebSocket client, and
- * starts the render loop.
+ * Requests local webcam video stream for AR background, initializes Three.js WebGL canvas,
+ * and handles WebSocket streams from the Python backend.
  */
 
 import { SceneManager } from './scene/SceneManager.js';
@@ -10,11 +10,40 @@ import { WebSocketClient } from './net/WebSocketClient.js';
 
 const WS_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:8000/ws';
 
-// Initialize scene
+// 1. Initialize transparent Three.js WebGL scene
 const sceneManager = new SceneManager();
 sceneManager.init();
 
-// Connect to server
+// 2. Request webcam video stream for local AR background display
+const videoEl = document.getElementById('webcam');
+const cameraEl = document.getElementById('camera');
+
+async function initWebcam() {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+                width: { ideal: 1280 },
+                height: { ideal: 720 },
+                facingMode: 'user',
+            },
+            audio: false,
+        });
+
+        if (videoEl) {
+            videoEl.srcObject = stream;
+            await videoEl.play();
+        }
+
+        if (cameraEl) cameraEl.textContent = 'Camera: active';
+    } catch (err) {
+        console.warn('[Camera] Local webcam access denied or unavailable:', err);
+        if (cameraEl) cameraEl.textContent = 'Camera: offline / synthetic';
+    }
+}
+
+initWebcam();
+
+// 3. Connect to Python FastAPI WebSocket backend
 const ws = new WebSocketClient(WS_URL);
 ws.onMessage((msg) => {
     switch (msg.type) {
@@ -25,7 +54,7 @@ ws.onMessage((msg) => {
             sceneManager.updateEffects(msg);
             break;
         case 'gesture':
-            console.log(`Gesture: ${msg.gesture_class} (${msg.confidence.toFixed(2)})`);
+            console.log(`[Gesture Detected] ${msg.gesture_class} (${(msg.confidence * 100).toFixed(1)}%) -> Action: ${msg.action}`);
             break;
         default:
             break;
@@ -34,7 +63,7 @@ ws.onMessage((msg) => {
 
 ws.connect();
 
-// Update status overlay
+// Update status HUD
 const statusEl = document.getElementById('status');
-ws.onOpen(() => { statusEl.textContent = 'Status: connected'; });
-ws.onClose(() => { statusEl.textContent = 'Status: disconnected'; });
+ws.onOpen(() => { if (statusEl) statusEl.textContent = 'Status: connected'; });
+ws.onClose(() => { if (statusEl) statusEl.textContent = 'Status: disconnected'; });

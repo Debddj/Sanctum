@@ -1,8 +1,8 @@
 /**
- * Three.js scene manager — scene, camera, renderer, and render loop.
+ * Three.js scene manager — scene, camera, transparent WebGL renderer, and render loop.
  *
  * Manages rendering of hand skeleton overlays and portal VFX materials
- * synced to incoming WebSocket data.
+ * synced to incoming WebSocket data over the live camera video background.
  */
 
 import * as THREE from 'three';
@@ -23,9 +23,8 @@ export class SceneManager {
     }
 
     init() {
-        // Scene
+        // Scene with transparent background to allow webcam video through
         this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color(0x0a0a0f);
 
         // Camera
         this.camera = new THREE.PerspectiveCamera(
@@ -36,10 +35,11 @@ export class SceneManager {
         );
         this.camera.position.z = 5;
 
-        // Renderer
-        this.renderer = new THREE.WebGLRenderer({ antialias: true });
+        // Transparent WebGL Renderer
+        this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.setPixelRatio(window.devicePixelRatio);
+        this.renderer.setClearColor(0x000000, 0); // Completely transparent canvas
         document.body.appendChild(this.renderer.domElement);
 
         // 1. Hand skeleton overlay
@@ -76,9 +76,9 @@ export class SceneManager {
             if (effectState.portal.center) {
                 const cx = effectState.portal.center[0];
                 const cy = effectState.portal.center[1];
-                // Map normalized coords (0..1) to Three.js camera space
+                // Map normalized coords (0..1) to Three.js camera space (mirroring x for selfie video)
                 this.portalMesh.position.set(
-                    (cx - 0.5) * 4.0,
+                    -(cx - 0.5) * 4.0,
                     -(cy - 0.5) * 3.0,
                     0.0
                 );

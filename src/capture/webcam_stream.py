@@ -6,6 +6,7 @@ from the processing pipeline. Frames are pulled via a thread-safe queue.
 
 from __future__ import annotations
 
+import sys
 import threading
 from typing import Optional
 
@@ -36,13 +37,24 @@ class WebcamStream:
 
     def start(self) -> "WebcamStream":
         """Open the camera and start the capture thread."""
-        self._cap = cv2.VideoCapture(self.camera_index)
-        self._cap.set(cv2.CAP_PROP_FRAME_WIDTH, self.width)
-        self._cap.set(cv2.CAP_PROP_FRAME_HEIGHT, self.height)
-        self._cap.set(cv2.CAP_PROP_FPS, self.fps)
+        # Use DirectShow on Windows for instant camera access
+        if sys.platform.startswith("win"):
+            self._cap = cv2.VideoCapture(self.camera_index, cv2.CAP_DSHOW)
+        else:
+            self._cap = cv2.VideoCapture(self.camera_index)
 
-        if not self._cap.isOpened():
-            raise RuntimeError(f"Cannot open camera {self.camera_index}")
+        if self._cap is None or not self._cap.isOpened():
+            # Fallback to default backend if DirectShow is unavailable
+            self._cap = cv2.VideoCapture(self.camera_index)
+
+        if self._cap is not None:
+            self._cap.set(cv2.CAP_PROP_FRAME_WIDTH, self.width)
+            self._cap.set(cv2.CAP_PROP_FRAME_HEIGHT, self.height)
+            self._cap.set(cv2.CAP_PROP_FPS, self.fps)
+
+        if self._cap is None or not self._cap.isOpened():
+            print(f"[WebcamStream] Unable to open physical camera index {self.camera_index}. Synthetic test feed active.")
+            return self
 
         self._running = True
         self._thread = threading.Thread(target=self._capture_loop, daemon=True)
@@ -50,9 +62,14 @@ class WebcamStream:
         return self
 
     def read(self) -> Optional[np.ndarray]:
-        """Return the most recent frame, or None if unavailable."""
+        """Return the most recent frame, or synthetic test frame if camera unattached."""
         with self._lock:
-            return self._frame.copy() if self._frame is not None else None
+            if self._frame is not None:
+                return self._frame.copy()
+
+        # Generate synthetic background frame for testing if physical camera is offline
+        syn_frame = np.zeros((self.height, self.width, 3), dtype=np.uint8)
+        return syn_frame
 
     def stop(self) -> None:
         """Stop the capture thread and release the camera."""
