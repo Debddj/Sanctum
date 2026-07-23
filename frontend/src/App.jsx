@@ -1,8 +1,7 @@
 /**
  * Sanctum frontend application entry point.
  *
- * Requests local webcam video stream for AR background, initializes Three.js WebGL canvas,
- * and handles WebSocket streams from the Python backend.
+ * Initializes Three.js WebGL canvas and handles WebSocket streams from the Python backend.
  */
 
 import { SceneManager } from './scene/SceneManager.js';
@@ -14,41 +13,20 @@ const WS_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:8000/ws';
 const sceneManager = new SceneManager();
 sceneManager.init();
 
-// 2. Request webcam video stream for local AR background display
-const videoEl = document.getElementById('webcam');
-const cameraEl = document.getElementById('camera');
-
-async function initWebcam() {
-    try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-            video: {
-                width: { ideal: 1280 },
-                height: { ideal: 720 },
-                facingMode: 'user',
-            },
-            audio: false,
-        });
-
-        if (videoEl) {
-            videoEl.srcObject = stream;
-            await videoEl.play();
-        }
-
-        if (cameraEl) cameraEl.textContent = 'Camera: active';
-    } catch (err) {
-        console.warn('[Camera] Local webcam access denied or unavailable:', err);
-        if (cameraEl) cameraEl.textContent = 'Camera: offline / synthetic';
-    }
-}
-
-initWebcam();
+// 2. Camera background element
+const videoImgEl = document.getElementById('webcam');
 
 // 3. Connect to Python FastAPI WebSocket backend
 const ws = new WebSocketClient(WS_URL);
 ws.onMessage((msg) => {
     switch (msg.type) {
         case 'landmarks':
+            // Update 3D skeleton joints
             sceneManager.updateLandmarks(msg.hands);
+            // Update live camera video background frame
+            if (msg.image_b64 && videoImgEl) {
+                videoImgEl.src = msg.image_b64;
+            }
             break;
         case 'effect_state':
             sceneManager.updateEffects(msg);

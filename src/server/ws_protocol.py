@@ -7,7 +7,7 @@ Three.js frontend over the WebSocket connection.
 from __future__ import annotations
 
 from enum import Enum
-from typing import Optional
+from typing import Optional, Any
 
 from pydantic import BaseModel
 
@@ -24,12 +24,13 @@ class MessageType(str, Enum):
 
 
 class LandmarkMessage(BaseModel):
-    """Hand landmark data for a single frame."""
+    """Hand landmark data and camera video frame for a single frame."""
 
     type: MessageType = MessageType.LANDMARKS
     frame_id: int
     timestamp_ms: float
     hands: list[dict]  # List of {handedness, landmarks: [[x,y,z], ...]}
+    image_b64: Optional[str] = None  # Base64 JPEG data URL for browser video display
 
 
 class GestureMessage(BaseModel):
@@ -47,7 +48,7 @@ class EffectStateMessage(BaseModel):
 
     type: MessageType = MessageType.EFFECT_STATE
     frame_id: int
-    active_effects: list[dict]
+    active_effects: list[Any] = []
     portal: Optional[dict] = None  # centroid, normal, radius, lifetime
     time_reversal: Optional[dict] = None  # active, progress
     segmentation: Optional[dict] = None  # mask_available, background_id

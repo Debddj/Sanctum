@@ -7,9 +7,11 @@ capture → landmarks → normalization → sequence window → gesture classifi
 from __future__ import annotations
 
 import asyncio
+import base64
 from pathlib import Path
 from typing import Any, Optional, Set
 
+import cv2
 import numpy as np
 import yaml
 from fastapi import WebSocket
@@ -132,9 +134,19 @@ class PipelineOrchestrator:
 
             # 1. Capture stage
             frame = None
+            image_b64 = None
             if self.webcam_stream is not None:
                 with self.tracer.trace("capture"):
                     frame = self.webcam_stream.read()
+
+                if frame is not None:
+                    # Encode camera frame for frontend WebSocket streaming
+                    h, w = frame.shape[:2]
+                    display_frame = cv2.resize(frame, (640, int(640 * h / w))) if w > 640 else frame
+                    ret, jpeg_buf = cv2.imencode(".jpg", display_frame, [int(cv2.IMWRITE_JPEG_QUALITY), 65])
+                    if ret:
+                        b64_str = base64.b64encode(jpeg_buf).decode("ascii")
+                        image_b64 = f"data:image/jpeg;base64,{b64_str}"
 
             # 2. Landmark & Normalization stages
             detected_hands: list[dict[str, Any]] = []
@@ -156,11 +168,12 @@ class PipelineOrchestrator:
                         if self.sequence_window is not None:
                             self.sequence_window.push(norm_lms)
 
-            # Broadcast landmark frame message
+            # Broadcast landmark frame message with Base64 camera video payload
             msg = LandmarkMessage(
                 frame_id=frame_id,
                 timestamp_ms=start_time * 1000.0,
                 hands=detected_hands,
+                image_b64=image_b64,
             )
             await self.broadcast_json(msg.model_dump())
 
@@ -206,7 +219,7 @@ class PipelineOrchestrator:
                                         "radius": 0.35,
                                         "intensity": float(confidence),
                                     },
-                                    active_effects=[dispatch_action] if dispatch_action else [],
+                                    active_effects=[{"action": dispatch_action}] if dispatch_action else [],
                                 )
                                 await self.broadcast_json(eff_msg.model_dump())
 
