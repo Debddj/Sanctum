@@ -1,9 +1,9 @@
 /**
  * Debug hand landmark skeleton overlay for Three.js scene.
  *
- * Renders MediaPipe hand landmarks as spheres and connected line segments
- * matching the 21-point hand topology. Expects RAW MediaPipe coordinates
- * in 0-1 normalized range (NOT wrist-relative).
+ * Renders MediaPipe hand landmarks as cyan spheres and green connected bone
+ * line segments matching the 21-point hand topology.
+ * Expects RAW MediaPipe coordinates in 0-1 normalized range.
  */
 
 import * as THREE from 'three';
@@ -28,15 +28,22 @@ export class HandOverlay {
         this.scene.add(this.handsGroup);
 
         this._jointMaterial = new THREE.MeshBasicMaterial({ color: 0x00ffff });
+        this._tipMaterial = new THREE.MeshBasicMaterial({ color: 0xff3366 }); // Fingertip highlight
         this._boneMaterial = new THREE.LineBasicMaterial({ color: 0x00ff88, linewidth: 2 });
-        this._jointGeometry = new THREE.SphereGeometry(0.04, 8, 8);
+        this._jointGeometry = new THREE.SphereGeometry(0.05, 8, 8);
+        this._tipGeometry = new THREE.SphereGeometry(0.07, 8, 8);
+
+        // Fingertip landmark indices
+        this._tipIndices = new Set([4, 8, 12, 16, 20]);
     }
 
     update(hands) {
-        // Clear previous frame mesh objects
+        // Clear previous frame
         while (this.handsGroup.children.length > 0) {
             const child = this.handsGroup.children.pop();
-            if (child.geometry) child.geometry.dispose();
+            if (child.geometry && child.geometry !== this._jointGeometry && child.geometry !== this._tipGeometry) {
+                child.geometry.dispose();
+            }
         }
 
         if (!hands || hands.length === 0) return;
@@ -46,21 +53,23 @@ export class HandOverlay {
             if (!landmarks || landmarks.length < 21) return;
 
             // 1. Draw joint spheres
-            const positions = landmarks.map((lm) => {
-                // lm is [x, y, z] in 0-1 MediaPipe normalized coords
-                const x = lm[0];
+            const positions = landmarks.map((lm, idx) => {
+                const x = lm[0]; // 0-1 MediaPipe normalized
                 const y = lm[1];
                 const z = lm[2] || 0;
 
-                // Map to Three.js camera-space:
-                // Mirror X to match selfie-mirrored video
-                // Scale to fill visible frustum at z=5
+                // Map to Three.js camera space (no mirror — natural view)
                 const vec = new THREE.Vector3(
-                    -(x - 0.5) * 8.0,   // mirror + scale
+                    (x - 0.5) * 8.0,    // natural left-right
                     -(y - 0.5) * 6.0,   // flip Y (screen Y is top-down)
                     -z * 2.0
                 );
-                const jointMesh = new THREE.Mesh(this._jointGeometry, this._jointMaterial);
+
+                // Use larger pink sphere for fingertips, cyan for other joints
+                const isTip = this._tipIndices.has(idx);
+                const geo = isTip ? this._tipGeometry : this._jointGeometry;
+                const mat = isTip ? this._tipMaterial : this._jointMaterial;
+                const jointMesh = new THREE.Mesh(geo, mat);
                 jointMesh.position.copy(vec);
                 this.handsGroup.add(jointMesh);
                 return vec;
@@ -92,7 +101,9 @@ export class HandOverlay {
     dispose() {
         this.scene.remove(this.handsGroup);
         this._jointMaterial.dispose();
+        this._tipMaterial.dispose();
         this._boneMaterial.dispose();
         this._jointGeometry.dispose();
+        this._tipGeometry.dispose();
     }
 }

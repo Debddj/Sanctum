@@ -128,7 +128,7 @@ class PipelineOrchestrator:
         frame_id = 0
         target_fps = self.pipeline_config.get("pipeline", {}).get("target_fps", 30)
         frame_delay = 1.0 / target_fps
-        log_interval = 90  # Log hand detection info every N frames
+        log_interval = 30  # Log hand detection info every N frames
 
         while self.is_running:
             start_time = asyncio.get_event_loop().time()
@@ -148,8 +148,7 @@ class PipelineOrchestrator:
                     display_w = min(640, w)
                     display_h = int(display_w * h / w)
                     display_frame = cv2.resize(frame, (display_w, display_h))
-                    # Flip horizontally for selfie-mirror view
-                    display_frame = cv2.flip(display_frame, 1)
+                    # No mirror flip — natural camera view (right hand = right on screen)
                     ret, jpeg_buf = cv2.imencode(".jpg", display_frame, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
                     if ret:
                         b64_str = base64.b64encode(jpeg_buf).decode("ascii")
