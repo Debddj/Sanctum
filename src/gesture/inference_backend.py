@@ -42,26 +42,27 @@ def classify_hand_kinematics(window: np.ndarray) -> Tuple[str, float]:
     ext_ring = float(np.linalg.norm(ring_tip - wrist))
     ext_pinky = float(np.linalg.norm(pinky_tip - wrist))
 
-    # 2. Check for Sling Ring (Circular Index Motion across 30-frame sequence)
+    # 2. Open Palm: ALL 4 fingers (index, middle, ring, pinky) extended wide
+    if ext_index > 0.18 and ext_middle > 0.18 and ext_ring > 0.18 and ext_pinky > 0.18 and d_thumb_index > 0.10:
+        return "open_palm", 0.96
+
+    # 3. Sling Ring: Index finger extended high while other fingers are curled OR circular index motion
     index_pts = seq[:, 8 * 3 : 8 * 3 + 3]  # (30, 3)
     x_range = float(np.ptp(index_pts[:, 0]))
     y_range = float(np.ptp(index_pts[:, 1]))
-    if x_range > 0.10 and y_range > 0.10:
-        return "sling_ring", 0.94
+    if (ext_index > 0.18 and ext_middle < 0.18 and ext_ring < 0.18) or (x_range > 0.08 and y_range > 0.08):
+        return "sling_ring", 0.95
 
-    # 3. Check for Mudra Hold (Thumb tip touches Ring tip or Index tip while middle/pinky extended)
-    if d_thumb_ring < 0.12 or (d_thumb_index < 0.12 and ext_middle > 0.18 and ext_pinky > 0.18):
+    # 4. Pinch Pull: Thumb & Index pinched close together (<0.08)
+    if d_thumb_index < 0.08:
+        return "pinch_pull", 0.94
+
+    # 5. Mudra Hold: Thumb tip touches Ring tip or Index tip while other fingers extended
+    if d_thumb_ring < 0.10 or (d_thumb_index < 0.10 and ext_middle > 0.15):
         return "mudra_hold", 0.95
 
-    # 4. Check for Pinch Pull (Thumb & Index pinched together, < 0.10)
-    if d_thumb_index < 0.10 and d_thumb_ring > 0.12:
-        return "pinch_pull", 0.93
-
-    # 5. Check for Open Palm (All 5 fingertips extended wide from wrist)
-    if ext_index > 0.18 and ext_middle > 0.18 and ext_ring > 0.18 and ext_pinky > 0.18:
-        return "open_palm", 0.96
-
-    return "open_palm", 0.88
+    # Return none if pose doesn't match a distinct gesture (do NOT default to open_palm)
+    return "none", 0.0
 
 
 class BaseInferenceBackend(ABC):
@@ -111,7 +112,7 @@ class PyTorchBackend(BaseInferenceBackend):
     def predict(self, window: np.ndarray) -> Tuple[str, float]:
         # 1. Run 3D kinematic hand geometry and motion trajectory analysis
         k_class, k_conf = classify_hand_kinematics(window)
-        if k_class != "open_palm":
+        if k_class != "none":
             return k_class, k_conf
 
         # 2. PyTorch neural network forward pass fallback
@@ -153,7 +154,7 @@ class TensorRTBackend(BaseInferenceBackend):
 
     def predict(self, window: np.ndarray) -> Tuple[str, float]:
         k_class, k_conf = classify_hand_kinematics(window)
-        if k_class != "open_palm":
+        if k_class != "none":
             return k_class, k_conf
 
         if self.fallback_backend is not None:
