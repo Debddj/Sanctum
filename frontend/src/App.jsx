@@ -31,6 +31,17 @@ function showGestureBanner(text) {
     }
 }
 
+function highlightGuideItem(gestureClass) {
+    const items = document.querySelectorAll('.guide-item');
+    items.forEach((el) => el.classList.remove('active'));
+
+    const activeEl = document.getElementById(`guide-${gestureClass}`);
+    if (activeEl) {
+        activeEl.classList.add('active');
+        setTimeout(() => activeEl.classList.remove('active'), 2000);
+    }
+}
+
 // 3. Connect to Python FastAPI WebSocket backend
 const ws = new WebSocketClient(WS_URL);
 ws.onMessage((msg) => {
@@ -55,6 +66,7 @@ ws.onMessage((msg) => {
         case 'gesture':
             console.log(`[Gesture] ${msg.gesture_class} (${(msg.confidence * 100).toFixed(1)}%) -> ${msg.action}`);
             showGestureBanner(`✨ ${msg.gesture_class.toUpperCase()} → ${msg.action}`);
+            highlightGuideItem(msg.gesture_class);
             break;
         default:
             break;

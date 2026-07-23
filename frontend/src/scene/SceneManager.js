@@ -47,7 +47,7 @@ export class SceneManager {
 
         // 2. Portal VFX material & circle mesh
         this.portalMaterial = new PortalMaterial();
-        const portalGeo = new THREE.CircleGeometry(1, 64);
+        const portalGeo = new THREE.CircleGeometry(1.2, 64);
         this.portalMesh = new THREE.Mesh(portalGeo, this.portalMaterial);
         this.portalMesh.visible = false;
         this.scene.add(this.portalMesh);
@@ -61,7 +61,7 @@ export class SceneManager {
 
     updateLandmarks(hands) {
         if (this.handOverlay) {
-            this.handOverlay.update(hands);
+            this.handOverlay.update(hands, this.camera);
         }
     }
 
@@ -76,10 +76,14 @@ export class SceneManager {
             if (effectState.portal.center) {
                 const cx = effectState.portal.center[0];
                 const cy = effectState.portal.center[1];
-                // Map normalized coords (0..1) to Three.js camera space (mirroring x for selfie video)
+
+                const vFovRad = (this.camera.fov * Math.PI) / 180.0;
+                const visibleHeight = 2.0 * Math.tan(vFovRad / 2.0) * this.camera.position.z;
+                const visibleWidth = visibleHeight * this.camera.aspect;
+
                 this.portalMesh.position.set(
-                    -(cx - 0.5) * 4.0,
-                    -(cy - 0.5) * 3.0,
+                    (cx - 0.5) * visibleWidth,
+                    -(cy - 0.5) * visibleHeight,
                     0.0
                 );
             }

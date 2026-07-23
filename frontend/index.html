@@ -41,6 +41,67 @@
             box-shadow: 0 0 12px rgba(0, 255, 255, 0.25);
             backdrop-filter: blur(4px);
         }
+        #guide-panel {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            width: 320px;
+            z-index: 10;
+            pointer-events: none;
+            background: rgba(10, 10, 15, 0.85);
+            padding: 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(0, 255, 255, 0.4);
+            box-shadow: 0 0 16px rgba(0, 255, 255, 0.2);
+            backdrop-filter: blur(6px);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .guide-title {
+            color: #00ffff;
+            font-size: 14px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            text-align: center;
+            border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+            padding-bottom: 6px;
+        }
+        .guide-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            padding: 6px 8px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+        .guide-item.active {
+            background: rgba(255, 102, 0, 0.3);
+            border: 1px solid #ff6600;
+            box-shadow: 0 0 10px rgba(255, 102, 0, 0.5);
+        }
+        .guide-item .icon {
+            font-size: 24px;
+            margin-right: 10px;
+        }
+        .guide-item .info {
+            display: flex;
+            flex-direction: column;
+        }
+        .guide-item .name {
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .guide-item .action {
+            color: #00ff88;
+            font-size: 11px;
+        }
+        .guide-item .vfx {
+            color: #ffaa00;
+            font-size: 10px;
+            font-style: italic;
+        }
         #gesture-banner {
             position: fixed;
             bottom: 30px;
@@ -52,11 +113,11 @@
             font-weight: bold;
             z-index: 10;
             pointer-events: none;
-            background: rgba(10, 10, 15, 0.80);
+            background: rgba(10, 10, 15, 0.85);
             padding: 12px 24px;
             border-radius: 10px;
-            border: 2px solid rgba(255, 102, 0, 0.5);
-            box-shadow: 0 0 20px rgba(255, 102, 0, 0.3);
+            border: 2px solid rgba(255, 102, 0, 0.6);
+            box-shadow: 0 0 20px rgba(255, 102, 0, 0.4);
             display: none;
         }
     </style>
@@ -70,6 +131,43 @@
         <div id="fps">FPS: --</div>
         <div id="status">Status: connecting...</div>
         <div id="hands">Hands: 0</div>
+    </div>
+
+    <!-- Gesture Action Guide (Top-Right) -->
+    <div id="guide-panel">
+        <div class="guide-title">🌀 GESTURE ACTION GUIDE</div>
+        <div class="guide-item" id="guide-sling_ring">
+            <span class="icon">🌀</span>
+            <div class="info">
+                <div class="name">SLING RING</div>
+                <div class="action">Trace circular motion</div>
+                <div class="vfx">VFX: Spawn Doctor Strange Portal</div>
+            </div>
+        </div>
+        <div class="guide-item" id="guide-mudra_hold">
+            <span class="icon">✊</span>
+            <div class="info">
+                <div class="name">MUDRA HOLD</div>
+                <div class="action">Thumb tip touches ring finger</div>
+                <div class="vfx">VFX: Activate Energy Shield</div>
+            </div>
+        </div>
+        <div class="guide-item" id="guide-pinch_pull">
+            <span class="icon">🤏</span>
+            <div class="info">
+                <div class="name">PINCH PULL</div>
+                <div class="action">Pinch & pull hand backward</div>
+                <div class="vfx">VFX: Trigger Time Reversal Rewind</div>
+            </div>
+        </div>
+        <div class="guide-item" id="guide-open_palm">
+            <span class="icon">🖐️</span>
+            <div class="info">
+                <div class="name">OPEN PALM</div>
+                <div class="action">Open hand, fingers spread</div>
+                <div class="vfx">VFX: Dismiss Active Effect</div>
+            </div>
+        </div>
     </div>
 
     <!-- Bottom gesture detection banner -->

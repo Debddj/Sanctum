@@ -1,9 +1,9 @@
 /**
- * Debug hand landmark skeleton overlay for Three.js scene.
+ * Hand landmark skeleton overlay for Three.js scene.
  *
  * Renders MediaPipe hand landmarks as cyan spheres and green connected bone
  * line segments matching the 21-point hand topology.
- * Expects RAW MediaPipe coordinates in 0-1 normalized range.
+ * Dynamically computes exact camera frustum bounds for 1:1 screen alignment.
  */
 
 import * as THREE from 'three';
@@ -28,17 +28,17 @@ export class HandOverlay {
         this.scene.add(this.handsGroup);
 
         this._jointMaterial = new THREE.MeshBasicMaterial({ color: 0x00ffff });
-        this._tipMaterial = new THREE.MeshBasicMaterial({ color: 0xff3366 }); // Fingertip highlight
-        this._boneMaterial = new THREE.LineBasicMaterial({ color: 0x00ff88, linewidth: 2 });
-        this._jointGeometry = new THREE.SphereGeometry(0.05, 8, 8);
-        this._tipGeometry = new THREE.SphereGeometry(0.07, 8, 8);
+        this._tipMaterial = new THREE.MeshBasicMaterial({ color: 0xff0066 }); // Bright neon pink fingertip highlight
+        this._boneMaterial = new THREE.LineBasicMaterial({ color: 0x00ff88, linewidth: 3 });
+        this._jointGeometry = new THREE.SphereGeometry(0.12, 12, 12);
+        this._tipGeometry = new THREE.SphereGeometry(0.18, 12, 12);
 
         // Fingertip landmark indices
         this._tipIndices = new Set([4, 8, 12, 16, 20]);
     }
 
-    update(hands) {
-        // Clear previous frame
+    update(hands, camera) {
+        // Clear previous frame mesh objects
         while (this.handsGroup.children.length > 0) {
             const child = this.handsGroup.children.pop();
             if (child.geometry && child.geometry !== this._jointGeometry && child.geometry !== this._tipGeometry) {
@@ -46,7 +46,12 @@ export class HandOverlay {
             }
         }
 
-        if (!hands || hands.length === 0) return;
+        if (!hands || hands.length === 0 || !camera) return;
+
+        // Calculate exact visible camera frustum dimensions at z=0
+        const vFovRad = (camera.fov * Math.PI) / 180.0;
+        const visibleHeight = 2.0 * Math.tan(vFovRad / 2.0) * camera.position.z;
+        const visibleWidth = visibleHeight * camera.aspect;
 
         hands.forEach((hand) => {
             const landmarks = hand.landmarks;
@@ -58,14 +63,13 @@ export class HandOverlay {
                 const y = lm[1];
                 const z = lm[2] || 0;
 
-                // Map to Three.js camera space (no mirror — natural view)
+                // Exact 1:1 mapping to camera frustum bounds
                 const vec = new THREE.Vector3(
-                    (x - 0.5) * 8.0,    // natural left-right
-                    -(y - 0.5) * 6.0,   // flip Y (screen Y is top-down)
-                    -z * 2.0
+                    (x - 0.5) * visibleWidth,
+                    -(y - 0.5) * visibleHeight,
+                    -z * 3.0
                 );
 
-                // Use larger pink sphere for fingertips, cyan for other joints
                 const isTip = this._tipIndices.has(idx);
                 const geo = isTip ? this._tipGeometry : this._jointGeometry;
                 const mat = isTip ? this._tipMaterial : this._jointMaterial;
