@@ -9,6 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Optional
 
+import cv2
 import numpy as np
 
 
@@ -28,7 +29,7 @@ class MediaPipeHands:
         self,
         max_num_hands: int = 2,
         model_complexity: int = 1,
-        min_detection_confidence: float = 0.7,
+        min_detection_confidence: float = 0.5,
         min_tracking_confidence: float = 0.5,
     ) -> None:
         try:
@@ -44,15 +45,24 @@ class MediaPipeHands:
         except Exception as e:
             raise RuntimeError(f"Failed to initialize MediaPipe Hands: {e}")
 
-    def extract(self, frame_rgb: np.ndarray) -> list[HandLandmarks]:
-        """Extract hand landmarks from an RGB frame.
+    def extract(self, frame_bgr: np.ndarray) -> list[HandLandmarks]:
+        """Extract hand landmarks from a BGR/RGB frame.
 
         Args:
-            frame_rgb: Input frame in RGB format, shape (H, W, 3).
+            frame_bgr: Input frame, shape (H, W, 3).
 
         Returns:
             List of HandLandmarks for each detected hand.
         """
+        if frame_bgr is None or frame_bgr.size == 0:
+            return []
+
+        # Ensure C-contiguous RGB array required by MediaPipe C++ engine
+        if len(frame_bgr.shape) == 3 and frame_bgr.shape[2] == 3:
+            frame_rgb = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2RGB)
+        else:
+            frame_rgb = np.ascontiguousarray(frame_bgr)
+
         results = self._hands.process(frame_rgb)
 
         if not results.multi_hand_landmarks:

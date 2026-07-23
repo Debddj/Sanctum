@@ -110,7 +110,7 @@ class PipelineOrchestrator:
         # 2. Landmarks stage
         if stages.get("landmarks", {}).get("enabled", True):
             try:
-                self.hands_extractor = MediaPipeHands()
+                self.hands_extractor = MediaPipeHands(min_detection_confidence=0.5, min_tracking_confidence=0.5)
                 print("[Orchestrator] MediaPipe Hands initialized.")
             except Exception as e:
                 print(f"[Orchestrator] MediaPipe initialization skipped/failed: {e}")
@@ -140,15 +140,17 @@ class PipelineOrchestrator:
             image_b64 = None
             if self.webcam_stream is not None:
                 with self.tracer.trace("capture"):
-                    frame = self.webcam_stream.read()
+                    raw_frame = self.webcam_stream.read()
 
-                if frame is not None and np.any(frame > 0):
+                if raw_frame is not None and np.any(raw_frame > 0):
+                    # Flip frame horizontally for selfie view (mirror mode)
+                    frame = cv2.flip(raw_frame, 1)
+
                     # Encode camera frame as JPEG base64 for frontend streaming
                     h, w = frame.shape[:2]
                     display_w = min(640, w)
                     display_h = int(display_w * h / w)
                     display_frame = cv2.resize(frame, (display_w, display_h))
-                    # No mirror flip — natural camera view (right hand = right on screen)
                     ret, jpeg_buf = cv2.imencode(".jpg", display_frame, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
                     if ret:
                         b64_str = base64.b64encode(jpeg_buf).decode("ascii")
@@ -159,8 +161,7 @@ class PipelineOrchestrator:
             raw_hands = []
             if frame is not None and self.hands_extractor is not None:
                 with self.tracer.trace("landmarks"):
-                    frame_rgb = frame[:, :, ::-1] if len(frame.shape) == 3 else frame
-                    raw_hands = self.hands_extractor.extract(frame_rgb)
+                    raw_hands = self.hands_extractor.extract(frame)
 
                 if frame_id % log_interval == 1:
                     print(f"[Frame {frame_id}] Hands detected: {len(raw_hands)}")
@@ -171,7 +172,6 @@ class PipelineOrchestrator:
                         norm_lms = normalize_landmarks(hand.landmarks, method="wrist_relative")
 
                         # Send RAW MediaPipe landmarks (0-1 range) to frontend for skeleton display
-                        # Send normalized landmarks separately for classifier consumption
                         detected_hands.append({
                             "handedness": hand.handedness,
                             "score": float(hand.score),
