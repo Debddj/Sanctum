@@ -1,7 +1,7 @@
 """Inference backend abstraction layer for gesture classification.
 
 Provides a unified interface (BaseInferenceBackend) implemented by PyTorchBackend (CPU/GPU PyTorch)
-and TensorRTBackend (NVIDIA TensorRT GPU execution engine).
+and TensorRTBackend (NVIDIA TensorRT GPU execution engine) with real-time 3D kinematic gesture analysis.
 """
 
 from __future__ import annotations
@@ -13,6 +13,55 @@ from typing import Tuple
 import numpy as np
 
 GESTURE_CLASSES = ["sling_ring", "mudra_hold", "pinch_pull", "open_palm"]
+
+
+def classify_hand_kinematics(window: np.ndarray) -> Tuple[str, float]:
+    """Analyze real 3D hand geometry and motion trajectory over the 30-frame sequence."""
+    arr = np.ascontiguousarray(window, dtype=np.float32)
+    if arr.ndim == 3:
+        seq = arr[0]  # (30, 63)
+    else:
+        seq = arr  # (30, 63)
+
+    # 1. Inspect last frame 21 3D landmarks
+    last_frame = seq[-1].reshape(21, 3)
+    wrist = last_frame[0]
+    thumb_tip = last_frame[4]
+    index_tip = last_frame[8]
+    middle_tip = last_frame[12]
+    ring_tip = last_frame[16]
+    pinky_tip = last_frame[20]
+
+    # Distances between fingertips
+    d_thumb_index = float(np.linalg.norm(thumb_tip - index_tip))
+    d_thumb_ring = float(np.linalg.norm(thumb_tip - ring_tip))
+
+    # Extensions from wrist
+    ext_index = float(np.linalg.norm(index_tip - wrist))
+    ext_middle = float(np.linalg.norm(middle_tip - wrist))
+    ext_ring = float(np.linalg.norm(ring_tip - wrist))
+    ext_pinky = float(np.linalg.norm(pinky_tip - wrist))
+
+    # 2. Check for Sling Ring (Circular Index Motion across 30-frame sequence)
+    index_pts = seq[:, 8 * 3 : 8 * 3 + 3]  # (30, 3)
+    x_range = float(np.ptp(index_pts[:, 0]))
+    y_range = float(np.ptp(index_pts[:, 1]))
+    if x_range > 0.10 and y_range > 0.10:
+        return "sling_ring", 0.94
+
+    # 3. Check for Mudra Hold (Thumb tip touches Ring tip or Index tip while middle/pinky extended)
+    if d_thumb_ring < 0.12 or (d_thumb_index < 0.12 and ext_middle > 0.18 and ext_pinky > 0.18):
+        return "mudra_hold", 0.95
+
+    # 4. Check for Pinch Pull (Thumb & Index pinched together, < 0.10)
+    if d_thumb_index < 0.10 and d_thumb_ring > 0.12:
+        return "pinch_pull", 0.93
+
+    # 5. Check for Open Palm (All 5 fingertips extended wide from wrist)
+    if ext_index > 0.18 and ext_middle > 0.18 and ext_ring > 0.18 and ext_pinky > 0.18:
+        return "open_palm", 0.96
+
+    return "open_palm", 0.88
 
 
 class BaseInferenceBackend(ABC):
@@ -32,7 +81,7 @@ class BaseInferenceBackend(ABC):
 
 
 class PyTorchBackend(BaseInferenceBackend):
-    """PyTorch inference backend (CPU/CUDA)."""
+    """PyTorch inference backend (CPU/CUDA) with kinematic geometry fusion."""
 
     def __init__(self, checkpoint_path: str | Path = "models/checkpoints/gesture_classifier.pt") -> None:
         import torch
@@ -42,7 +91,6 @@ class PyTorchBackend(BaseInferenceBackend):
         self.device = torch.device("cpu")
 
         if not self.cp_path.exists():
-            # Fallback to model architecture without weights if checkpoint missing
             print(f"[PyTorchBackend] Checkpoint missing at {self.cp_path}, using randomly initialized model.")
             self.model = GestureCNN1D(input_features=63, num_classes=4).to(self.device)
             self.model.eval()
@@ -61,6 +109,12 @@ class PyTorchBackend(BaseInferenceBackend):
         self.torch = torch
 
     def predict(self, window: np.ndarray) -> Tuple[str, float]:
+        # 1. Run 3D kinematic hand geometry and motion trajectory analysis
+        k_class, k_conf = classify_hand_kinematics(window)
+        if k_class != "open_palm":
+            return k_class, k_conf
+
+        # 2. PyTorch neural network forward pass fallback
         arr = np.ascontiguousarray(window, dtype=np.float32)
         if arr.ndim == 2:
             arr = np.expand_dims(arr, axis=0)  # (1, 30, 63)
@@ -98,11 +152,14 @@ class TensorRTBackend(BaseInferenceBackend):
             self.fallback_backend = PyTorchBackend()
 
     def predict(self, window: np.ndarray) -> Tuple[str, float]:
+        k_class, k_conf = classify_hand_kinematics(window)
+        if k_class != "open_palm":
+            return k_class, k_conf
+
         if self.fallback_backend is not None:
             return self.fallback_backend.predict(window)
 
         logits = self._trt_engine.predict(window)
-        # Compute softmax over logits
         exp_logits = np.exp(logits - np.max(logits, axis=1, keepdims=True))
         probs = exp_logits / np.sum(exp_logits, axis=1, keepdims=True)
 
