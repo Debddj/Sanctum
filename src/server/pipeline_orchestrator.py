@@ -102,6 +102,7 @@ class PipelineOrchestrator:
         if stages.get("capture", {}).get("enabled", True):
             try:
                 self.webcam_stream = WebcamStream(camera_index=0).start()
+                print("[Orchestrator] Webcam opened successfully.")
             except Exception as e:
                 print(f"[Orchestrator] Webcam initialization skipped/failed: {e}")
                 self.webcam_stream = None
@@ -110,6 +111,7 @@ class PipelineOrchestrator:
         if stages.get("landmarks", {}).get("enabled", True):
             try:
                 self.hands_extractor = MediaPipeHands()
+                print("[Orchestrator] MediaPipe Hands initialized.")
             except Exception as e:
                 print(f"[Orchestrator] MediaPipe initialization skipped/failed: {e}")
                 self.hands_extractor = None
@@ -126,6 +128,7 @@ class PipelineOrchestrator:
         frame_id = 0
         target_fps = self.pipeline_config.get("pipeline", {}).get("target_fps", 30)
         frame_delay = 1.0 / target_fps
+        log_interval = 90  # Log hand detection info every N frames
 
         while self.is_running:
             start_time = asyncio.get_event_loop().time()
@@ -139,11 +142,15 @@ class PipelineOrchestrator:
                 with self.tracer.trace("capture"):
                     frame = self.webcam_stream.read()
 
-                if frame is not None:
-                    # Encode camera frame for frontend WebSocket streaming
+                if frame is not None and np.any(frame > 0):
+                    # Encode camera frame as JPEG base64 for frontend streaming
                     h, w = frame.shape[:2]
-                    display_frame = cv2.resize(frame, (640, int(640 * h / w))) if w > 640 else frame
-                    ret, jpeg_buf = cv2.imencode(".jpg", display_frame, [int(cv2.IMWRITE_JPEG_QUALITY), 65])
+                    display_w = min(640, w)
+                    display_h = int(display_w * h / w)
+                    display_frame = cv2.resize(frame, (display_w, display_h))
+                    # Flip horizontally for selfie-mirror view
+                    display_frame = cv2.flip(display_frame, 1)
+                    ret, jpeg_buf = cv2.imencode(".jpg", display_frame, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
                     if ret:
                         b64_str = base64.b64encode(jpeg_buf).decode("ascii")
                         image_b64 = f"data:image/jpeg;base64,{b64_str}"
@@ -156,19 +163,26 @@ class PipelineOrchestrator:
                     frame_rgb = frame[:, :, ::-1] if len(frame.shape) == 3 else frame
                     raw_hands = self.hands_extractor.extract(frame_rgb)
 
+                if frame_id % log_interval == 1:
+                    print(f"[Frame {frame_id}] Hands detected: {len(raw_hands)}")
+
                 with self.tracer.trace("normalization"):
                     for hand in raw_hands:
+                        # Wrist-relative normalization for classifier input
                         norm_lms = normalize_landmarks(hand.landmarks, method="wrist_relative")
+
+                        # Send RAW MediaPipe landmarks (0-1 range) to frontend for skeleton display
+                        # Send normalized landmarks separately for classifier consumption
                         detected_hands.append({
                             "handedness": hand.handedness,
                             "score": float(hand.score),
-                            "landmarks": norm_lms.tolist(),
+                            "landmarks": hand.landmarks.tolist(),  # RAW (0-1) for display
                         })
 
                         if self.sequence_window is not None:
                             self.sequence_window.push(norm_lms)
 
-            # Broadcast landmark frame message with Base64 camera video payload
+            # Broadcast landmark frame message with camera video payload
             msg = LandmarkMessage(
                 frame_id=frame_id,
                 timestamp_ms=start_time * 1000.0,
@@ -190,7 +204,7 @@ class PipelineOrchestrator:
                         if confidence >= min_conf:
                             dispatch_action = gesture_cfg.get("dispatch_action", "")
 
-                            # Compute hand centroid for VFX positioning
+                            # Compute hand centroid for VFX positioning (from raw landmarks)
                             centroid = [0.5, 0.5]
                             if raw_hands:
                                 wrist = raw_hands[0].landmarks[0]
@@ -210,7 +224,6 @@ class PipelineOrchestrator:
                                 )
                                 await self.broadcast_json(g_msg.model_dump())
 
-                                # Broadcast effect state updates for active portal
                                 eff_msg = EffectStateMessage(
                                     frame_id=frame_id,
                                     portal={
